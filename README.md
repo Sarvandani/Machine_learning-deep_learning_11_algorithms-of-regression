@@ -1,1 +1,1 @@
-# Machine_learning-deep_learning_11algorithms-of-regression
+# Machine_learning-deep_learning_11_algorithms-of-regression
