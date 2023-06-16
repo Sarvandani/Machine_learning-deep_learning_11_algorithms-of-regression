@@ -1,1295 +1,676 @@
 ```python
-#Importing the Libraries
-import numpy as np
+
+import glob
 import pandas as pd
-import datetime
-import matplotlib
+import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import colors
 import seaborn as sns
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from yellowbrick.cluster import KElbowVisualizer
-from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt, numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn.cluster import AgglomerativeClustering
-from matplotlib.colors import ListedColormap
+import hvplot.pandas
+import csv
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import max_error
 from sklearn import metrics
-import warnings
-import sys
-if not sys.warnoptions:
-    warnings.simplefilter("ignore")
-np.random.seed(42)
+from sklearn.metrics import r2_score
+from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+
+
 ```
 
 
 ```python
-#Loading the dataset
-#reading data
-Data = pd.read_csv("marketing_campaign.csv", sep="\t")
-Data.head()
-
-
+## reading data - information
+data = pd.read_csv('merged_data.txt', sep=" ", header=None)
+data.columns = ["Y", "X"]
+data
+data.to_csv ('data.csv', index=None)
+print(data.head())
+data.info()
+sns.pairplot(data)
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>ID</th>
-      <th>Year_Birth</th>
-      <th>Education</th>
-      <th>Marital_Status</th>
-      <th>Income</th>
-      <th>Kidhome</th>
-      <th>Teenhome</th>
-      <th>Dt_Customer</th>
-      <th>Recency</th>
-      <th>MntWines</th>
-      <th>...</th>
-      <th>NumWebVisitsMonth</th>
-      <th>AcceptedCmp3</th>
-      <th>AcceptedCmp4</th>
-      <th>AcceptedCmp5</th>
-      <th>AcceptedCmp1</th>
-      <th>AcceptedCmp2</th>
-      <th>Complain</th>
-      <th>Z_CostContact</th>
-      <th>Z_Revenue</th>
-      <th>Response</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>5524</td>
-      <td>1957</td>
-      <td>Graduation</td>
-      <td>Single</td>
-      <td>58138.0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>04-09-2012</td>
-      <td>58</td>
-      <td>635</td>
-      <td>...</td>
-      <td>7</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>11</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>2174</td>
-      <td>1954</td>
-      <td>Graduation</td>
-      <td>Single</td>
-      <td>46344.0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>08-03-2014</td>
-      <td>38</td>
-      <td>11</td>
-      <td>...</td>
-      <td>5</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>11</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>4141</td>
-      <td>1965</td>
-      <td>Graduation</td>
-      <td>Together</td>
-      <td>71613.0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>21-08-2013</td>
-      <td>26</td>
-      <td>426</td>
-      <td>...</td>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>11</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>6182</td>
-      <td>1984</td>
-      <td>Graduation</td>
-      <td>Together</td>
-      <td>26646.0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>10-02-2014</td>
-      <td>26</td>
-      <td>11</td>
-      <td>...</td>
-      <td>6</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>11</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>5324</td>
-      <td>1981</td>
-      <td>PhD</td>
-      <td>Married</td>
-      <td>58293.0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>19-01-2014</td>
-      <td>94</td>
-      <td>173</td>
-      <td>...</td>
-      <td>5</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>11</td>
-      <td>0</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 29 columns</p>
-</div>
-
-
-
-
-```python
-Data.info()
-```
-
+            Y       X
+    0  5.1627  2.0243
+    1  4.3093  1.5470
+    2  3.7513  1.3042
+    3  3.1206  1.2382
+    4  2.7733  1.1511
     <class 'pandas.core.frame.DataFrame'>
-    RangeIndex: 2240 entries, 0 to 2239
-    Data columns (total 29 columns):
-     #   Column               Non-Null Count  Dtype  
-    ---  ------               --------------  -----  
-     0   ID                   2240 non-null   int64  
-     1   Year_Birth           2240 non-null   int64  
-     2   Education            2240 non-null   object 
-     3   Marital_Status       2240 non-null   object 
-     4   Income               2216 non-null   float64
-     5   Kidhome              2240 non-null   int64  
-     6   Teenhome             2240 non-null   int64  
-     7   Dt_Customer          2240 non-null   object 
-     8   Recency              2240 non-null   int64  
-     9   MntWines             2240 non-null   int64  
-     10  MntFruits            2240 non-null   int64  
-     11  MntMeatProducts      2240 non-null   int64  
-     12  MntFishProducts      2240 non-null   int64  
-     13  MntSweetProducts     2240 non-null   int64  
-     14  MntGoldProds         2240 non-null   int64  
-     15  NumDealsPurchases    2240 non-null   int64  
-     16  NumWebPurchases      2240 non-null   int64  
-     17  NumCatalogPurchases  2240 non-null   int64  
-     18  NumStorePurchases    2240 non-null   int64  
-     19  NumWebVisitsMonth    2240 non-null   int64  
-     20  AcceptedCmp3         2240 non-null   int64  
-     21  AcceptedCmp4         2240 non-null   int64  
-     22  AcceptedCmp5         2240 non-null   int64  
-     23  AcceptedCmp1         2240 non-null   int64  
-     24  AcceptedCmp2         2240 non-null   int64  
-     25  Complain             2240 non-null   int64  
-     26  Z_CostContact        2240 non-null   int64  
-     27  Z_Revenue            2240 non-null   int64  
-     28  Response             2240 non-null   int64  
-    dtypes: float64(1), int64(25), object(3)
-    memory usage: 507.6+ KB
-
-
-
-```python
-#checking missing values
-null_values = Data.isnull().sum()
-print(null_values)
-```
-
-    ID                      0
-    Year_Birth              0
-    Education               0
-    Marital_Status          0
-    Income                 24
-    Kidhome                 0
-    Teenhome                0
-    Dt_Customer             0
-    Recency                 0
-    MntWines                0
-    MntFruits               0
-    MntMeatProducts         0
-    MntFishProducts         0
-    MntSweetProducts        0
-    MntGoldProds            0
-    NumDealsPurchases       0
-    NumWebPurchases         0
-    NumCatalogPurchases     0
-    NumStorePurchases       0
-    NumWebVisitsMonth       0
-    AcceptedCmp3            0
-    AcceptedCmp4            0
-    AcceptedCmp5            0
-    AcceptedCmp1            0
-    AcceptedCmp2            0
-    Complain                0
-    Z_CostContact           0
-    Z_Revenue               0
-    Response                0
-    dtype: int64
-
-
-
-```python
-#checking duplicated values
-duplicate_values = Data[Data.duplicated()]
-print(duplicate_values)
-```
-
-    Empty DataFrame
-    Columns: [ID, Year_Birth, Education, Marital_Status, Income, Kidhome, Teenhome, Dt_Customer, Recency, MntWines, MntFruits, MntMeatProducts, MntFishProducts, MntSweetProducts, MntGoldProds, NumDealsPurchases, NumWebPurchases, NumCatalogPurchases, NumStorePurchases, NumWebVisitsMonth, AcceptedCmp3, AcceptedCmp4, AcceptedCmp5, AcceptedCmp1, AcceptedCmp2, Complain, Z_CostContact, Z_Revenue, Response]
-    Index: []
-    
-    [0 rows x 29 columns]
-
-
-
-```python
-##rectifying missing values
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
-df = pd.DataFrame(Data)
-columns_to_fill = ['Income']
-#df.drop('ID', axis=1,inplace=True)
-fill_cols = [col for col in columns_to_fill]
-itr_imputer = IterativeImputer(initial_strategy='median', min_value=0, random_state=100)
-df[fill_cols] = itr_imputer.fit_transform(df[fill_cols])
-plt.figure(figsize = (14,10))
-sns.heatmap(df.isnull(), cmap= 'PiYG', cbar=False, yticklabels=False, xticklabels=df.columns)
-```
+    RangeIndex: 692 entries, 0 to 691
+    Data columns (total 2 columns):
+     #   Column  Non-Null Count  Dtype  
+    ---  ------  --------------  -----  
+     0   Y       692 non-null    float64
+     1   X       692 non-null    float64
+    dtypes: float64(2)
+    memory usage: 10.9 KB
 
 
 
 
-    <AxesSubplot:>
+
+    <seaborn.axisgrid.PairGrid at 0x15b36fa60>
 
 
 
 
     
-![png](clustering_algo_files/clustering_algo_5_1.png)
+![png](regression_algorithms_files/regression_algorithms_1_2.png)
     
 
 
 
 ```python
-#Dt_Customer_N=df.set_index(['Dt_Customer'])
-#Dt_Customer_N.index=pd.to_datetime(Dt_Customer_N.index, infer_datetime_format= True)
-#Data["Dt_Customer_N"] = Data["Dt_Customer"]
-#print(Dt_Customer_N)
-#Data.head()
-
+features =  data[['X']]
+lables =  data[['Y']]
+X = features # Independent variable
+y = lables # Dependent variable
 ```
 
 
 ```python
-# feature engineering :  
-#We are adding new columns to data
-Data["Age"] = 2023-Data["Year_Birth"]
-Data["Children"]=Data["Kidhome"]+Data["Teenhome"]
-#REPLACING
-Data["Education"]=Data["Education"].replace({"Basic":"Undergraduate","2n Cycle":"Undergraduate", "Graduation":"Graduate", "Master":"Postgraduate", "PhD":"Postgraduate"})
-#renaming
-Data=Data.rename(columns={"MntWines": "Wines","MntFruits":"Fruits","MntMeatProducts":"Meat","MntFishProducts":"Fish","MntSweetProducts":"Sweets","MntGoldProds":"Gold"})
-#Feature pertaining parenthood
-Data["Is_Parent"] = np.where(Data.Children> 0, 1, 0)
-#Dropping some of the redundant features
-to_drop = ["Marital_Status", "Dt_Customer", "Z_CostContact", "Z_Revenue", "Year_Birth", "ID", "Kidhome", "Teenhome", "AcceptedCmp1", "AcceptedCmp2", "AcceptedCmp3", "AcceptedCmp4", "AcceptedCmp5"]
-Data = Data.drop(to_drop, axis=1)
-Data.head()
+
+y.shape
 
 ```
 
 
 
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Education</th>
-      <th>Income</th>
-      <th>Recency</th>
-      <th>Wines</th>
-      <th>Fruits</th>
-      <th>Meat</th>
-      <th>Fish</th>
-      <th>Sweets</th>
-      <th>Gold</th>
-      <th>NumDealsPurchases</th>
-      <th>NumWebPurchases</th>
-      <th>NumCatalogPurchases</th>
-      <th>NumStorePurchases</th>
-      <th>NumWebVisitsMonth</th>
-      <th>Complain</th>
-      <th>Response</th>
-      <th>Age</th>
-      <th>Children</th>
-      <th>Is_Parent</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>Graduate</td>
-      <td>58138.0</td>
-      <td>58</td>
-      <td>635</td>
-      <td>88</td>
-      <td>546</td>
-      <td>172</td>
-      <td>88</td>
-      <td>88</td>
-      <td>3</td>
-      <td>8</td>
-      <td>10</td>
-      <td>4</td>
-      <td>7</td>
-      <td>0</td>
-      <td>1</td>
-      <td>66</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Graduate</td>
-      <td>46344.0</td>
-      <td>38</td>
-      <td>11</td>
-      <td>1</td>
-      <td>6</td>
-      <td>2</td>
-      <td>1</td>
-      <td>6</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
-      <td>2</td>
-      <td>5</td>
-      <td>0</td>
-      <td>0</td>
-      <td>69</td>
-      <td>2</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Graduate</td>
-      <td>71613.0</td>
-      <td>26</td>
-      <td>426</td>
-      <td>49</td>
-      <td>127</td>
-      <td>111</td>
-      <td>21</td>
-      <td>42</td>
-      <td>1</td>
-      <td>8</td>
-      <td>2</td>
-      <td>10</td>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
-      <td>58</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Graduate</td>
-      <td>26646.0</td>
-      <td>26</td>
-      <td>11</td>
-      <td>4</td>
-      <td>20</td>
-      <td>10</td>
-      <td>3</td>
-      <td>5</td>
-      <td>2</td>
-      <td>2</td>
-      <td>0</td>
-      <td>4</td>
-      <td>6</td>
-      <td>0</td>
-      <td>0</td>
-      <td>39</td>
-      <td>1</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Postgraduate</td>
-      <td>58293.0</td>
-      <td>94</td>
-      <td>173</td>
-      <td>43</td>
-      <td>118</td>
-      <td>46</td>
-      <td>27</td>
-      <td>15</td>
-      <td>5</td>
-      <td>5</td>
-      <td>3</td>
-      <td>6</td>
-      <td>5</td>
-      <td>0</td>
-      <td>0</td>
-      <td>42</td>
-      <td>1</td>
-      <td>1</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+    (692, 1)
 
 
 
 
 ```python
-## data analysis
-##correlations: high correlations are in red
-correlation = Data.corr(method='pearson')
-fig, ax = plt.subplots()
-ax.figure.set_size_inches(24, 24)
-# a mask for the upper triangle
-mask = np.triu(np.ones_like(correlation, dtype=np.bool))
-# plots the coorelations
-sns.heatmap(correlation, cmap='rainbow', mask=mask, square=True, linewidths=.5, annot=True, annot_kws={'size':14})
+X.shape
+```
+
+
+
+
+    (692, 1)
+
+
+
+
+```python
+
+```
+
+
+```python
+## linear regression
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+## we define the model
+model_LIN = LinearRegression()
+model_LIN.fit(X_train, y_train)
+#####################################
+## model can predict any lable by giving the new input
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)  # New input value
+y_pred = model_LIN.predict(X_new)
+#####################################@
+y_pred_test = model_LIN.predict(X_test)
+y_pred_train = model_LIN.predict(X_train)
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training Data')
+plt.plot(X_new, model_LIN.predict(X_new), color='black', label='Linear Regression Line', linewidth=3)
+plt.scatter(X_test, y_test, color='red', label='Testing Data')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Linear Regression')
+plt.legend()
 plt.show()
 ```
 
-
-    
-![png](clustering_algo_files/clustering_algo_8_0.png)
-    
-
-
-
-```python
-## data analysis
-#plotting some selected features 
-#Setting up colors prefrences
-sns.set(rc={"axes.facecolor":"#FFF9ED","figure.facecolor":"#FFF9ED"})
-pallet = ["#682F2F", "#9E726F", "#D6B2B1", "#B9C0C9", "#9F8A78", "#F3AB60"]
-cmap = colors.ListedColormap(["#682F2F", "#9E726F", "#D6B2B1", "#B9C0C9", "#9F8A78", "#F3AB60"])
-#Plotting following features
-To_Plot = ["Income", "Recency", "Age", "Is_Parent"]
-print("Reletive Plot Of Some Selected Features: A Data Subset")
-plt.figure()
-sns.pairplot(Data[To_Plot], hue= "Is_Parent")
-#Taking hue 
-plt.show()
-```
-
-    Reletive Plot Of Some Selected Features: A Data Subset
-
-
-
-    <Figure size 576x396 with 0 Axes>
+    r2_score_test: 0.6249804344992638
+    r2_score_train: 0.5419741427254932
 
 
 
     
-![png](clustering_algo_files/clustering_algo_9_2.png)
+![png](regression_algorithms_files/regression_algorithms_6_1.png)
     
 
 
 
 ```python
-## data analysis: histograms
-fill_cols = [col for col in Data.columns]
-fig1, ax = plt.subplots(len(fill_cols),1,figsize=(10,50))
-for i, col in enumerate(Data):
-    ##FOR NOT HAVING LINE REMOVE kde = True
-    sns.histplot(Data[col], kde=True, ax=ax[i])
-fig1.tight_layout()
-plt.show()
-```
+########model: decision tree
+from sklearn.tree import DecisionTreeRegressor
+## the shape of fitting changes with this max_depth
+model_tree = DecisionTreeRegressor(max_depth=3)
+model_tree.fit(X_train, y_train)
+##########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = model_tree.predict(X_new)
+##############################
+y_pred_test = model_tree.predict(X_test)
+y_pred_train = model_tree.predict(X_train)
+y_pred_orginal = model_tree.predict(X)
 
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
 
-    
-![png](clustering_algo_files/clustering_algo_10_0.png)
-    
-
-
-
-```python
-## data analysis: categorial data to numerical data
-CATEGORIAL_DATA = (Data.dtypes == 'object')
-object_cols = list(CATEGORIAL_DATA[CATEGORIAL_DATA].index)
-print("Categorical Column=>", object_cols)
-```
-
-    Categorical Column=> ['Education']
-
-
-
-```python
-#converting categorial data to numerical data
-LE=LabelEncoder()
-for i in object_cols:
-    Data[i]=Data[[i]].apply(LE.fit_transform)
-    
-print("All features are numerical")
-```
-
-    All features are numerical
-
-
-
-```python
-scaler = StandardScaler()
-scaled_data = scaler.fit_transform(Data)
-plt.figure(figsize=(20,9))
-sns.heatmap(scaled_data)
-plt.show()
-scaled_data = pd.DataFrame(scaled_data)
-
-```
-
-
-    
-![png](clustering_algo_files/clustering_algo_13_0.png)
-    
-
-
-
-```python
-## selecting cluster number, max in the curve is the prefered cluster numebr
-from sklearn.metrics import silhouette_score
-##The first step is to randomly choose k centroids, where k is number of clusters
-##The random initialization step causes the k-means algorithm to be  varied if you run the same algorithm twice on the same data
-kmeans_set = {"init":"random", "max_iter":200,"random_state":42}
-## next step we should define the number of clusters by a method here I used silhouette_coefficients.
-silhouette_coefficients =[]
-for k in range(2,len(fill_cols)+1):
-    kmeans=KMeans(n_clusters=k,**kmeans_set).fit(scaled_data)
-    score=silhouette_score(scaled_data,kmeans.labels_)
-    silhouette_coefficients.append(score)
-plt.style.use("fivethirtyeight")
-plt.plot(range(2,len(fill_cols)+1),silhouette_coefficients,marker='o')
-plt.xticks(range(2,len(fill_cols)+1))
-plt.xlabel("Number of Clusters")
-plt.ylabel("silhouette coefficients")
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with decision-tree')
+plt.legend()
 plt.show()
 
 ```
 
+    r2_score_test: 0.6460700311533281
+    r2_score_train: 0.6073236518752619
+    r2_score_orginal: 0.6223754318811467
 
-    
-![png](clustering_algo_files/clustering_algo_14_0.png)
-    
-
-
-
-```python
-## method: K-mean
-kmeans = KMeans(n_clusters=2,**kmeans_set).fit(scaled_data)
-cluster_centers = pd.DataFrame(data = kmeans.cluster_centers_, columns = [Data.columns])
-cluster_centers = scaler.inverse_transform(cluster_centers)
-cluster_centers = pd.DataFrame(data = cluster_centers, columns = [Data.columns])
-labels = kmeans.labels_
-data_cluster_with_kmean = pd.concat([Data, pd.DataFrame({'cluster': labels})], axis = 1)
-ax = sns.countplot(data=data_cluster_with_kmean, x='cluster', palette='Accent_r', saturation=1, linewidth = 1)
-
-```
 
 
     
-![png](clustering_algo_files/clustering_algo_15_0.png)
+![png](regression_algorithms_files/regression_algorithms_7_1.png)
     
 
 
 
 ```python
-##visualizing k-mean results on original data
-kmeans = KMeans(n_clusters=2,init= "random", random_state = 1).fit(Data)
-centroids = kmeans.cluster_centers_
-plt.figure(figsize=(15,8))
-Data_kmean = Data.copy()
-Data_kmean['cluster'] = kmeans.labels_
-sns.relplot(data = Data_kmean ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-```
+########model: Random forest
+from sklearn.ensemble import RandomForestRegressor
+model_random = RandomForestRegressor(n_estimators=692, max_depth=5)
+model_random.fit(X_train, y_train)
+########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = model_random.predict(X_new)
+##############################
+y_pred_test = model_random.predict(X_test)
+y_pred_train = model_random.predict(X_train)
+y_pred_orginal = model_random.predict(X)
 
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
 
-
-
-    Text(14.315430614909786, 0.5, 'Income')
-
-
-
-
-    <Figure size 1080x576 with 0 Axes>
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_16_2.png)
-    
-
-
-
-```python
-# visualizing K-mean for all columns
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot( data_cluster_with_kmean[ best_cols ], hue="cluster",palette='Accent')  
-```
-
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x128eee340>
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_17_1.png)
-    
-
-
-
-```python
-## method: AgglomerativeClustering
-# we select number of clusters based on analysis
-from scipy.cluster.hierarchy import dendrogram, linkage
-# Compute the linkage matrix
-linkage_matrix = linkage(Data, method='ward')
-# Plot the dendrogram
-plt.figure(figsize=(10, 6))
-dendrogram(linkage_matrix)
-plt.xlabel('Data Points')
-plt.ylabel('Distance')
-plt.title('Dendrogram')
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with Random Forest')
+plt.legend()
 plt.show()
 
-
 ```
 
+    <ipython-input-296-78053869c345>:4: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples,), for example using ravel().
+      model_random.fit(X_train, y_train)
+
+
+    r2_score_test: 0.5318808842374556
+    r2_score_train: 0.7834369035149201
+    r2_score_orginal: 0.688481305796875
+
+
 
     
-![png](clustering_algo_files/clustering_algo_18_0.png)
-    
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_18_1.png)
+![png](regression_algorithms_files/regression_algorithms_8_2.png)
     
 
 
 
 ```python
-from sklearn.cluster import AgglomerativeClustering
-# Initialize the Agglomerative Clustering model
-agg_clustering = AgglomerativeClustering(n_clusters=5)
-# Fit the Agglomerative Clustering model to the data
-agg_clustering.fit(Data)
-# Extract the cluster labels
-labels = agg_clustering.labels_
-# Print the number of clusters
-n_clusters = len(np.unique(labels))
-print(f"Number of clusters: {n_clusters}")
+########model: SVR
+from sklearn.svm import SVR
+##PLAY WITH  c and epsilon
+model_svr = SVR(kernel='rbf', C=20, epsilon=0.3)
+model_svr.fit(X_train, y_train)
+########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = model_svr.predict(X_new)
+
+y_pred_test = model_svr.predict(X_test)
+y_pred_train = model_svr.predict(X_train)
+y_pred_orginal = model_svr.predict(X)
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
+
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with svr')
+plt.legend()
+plt.show()
+
 ```
 
-    Number of clusters: 5
+    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+      return f(*args, **kwargs)
 
 
-
-```python
-data_agg_clustering = Data.copy()
-data_agg_clustering['cluster'] = agg_clustering.labels_
-sns.relplot(data = data_agg_clustering ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-#plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-```
-
-
-
-
-    Text(14.315430614909786, 0.5, 'Income')
-
+    r2_score_test: 0.5936860250103088
+    r2_score_train: 0.5677285714202208
+    r2_score_orginal: 0.5779814652663983
 
 
 
     
-![png](clustering_algo_files/clustering_algo_20_1.png)
-    
-
-
-
-```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot( data_agg_clustering[ best_cols ], hue="cluster",palette='Accent') 
-```
-
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x17a5306a0>
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_21_1.png)
+![png](regression_algorithms_files/regression_algorithms_9_2.png)
     
 
 
 
 ```python
-## spectral clustering method
-from sklearn.cluster import SpectralClustering
+########model: KNN
+from sklearn.neighbors import KNeighborsRegressor
+##PLAY WITH  n_neighbors
+model_knn = KNeighborsRegressor(n_neighbors=20)
+model_knn.fit(X_train, y_train)
+########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = knn.predict(X_new)
 
-spectral = SpectralClustering(n_clusters=2).fit(Data)  # Specify the number of desired clusters
+y_pred_test = model_knn.predict(X_test)
+y_pred_train = model_knn.predict(X_train)
+y_pred_orginal = model_knn.predict(X)
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
 
-# Fit the SpectralClustering model to the data
-data_Spectral = Data.copy()
-data_Spectral['cluster'] = spectral.labels_
-sns.relplot(data = data_Spectral ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with knn')
+plt.legend()
+plt.show()
 
 ```
 
-
-
-
-    Text(14.315430614909786, 0.5, 'Income')
-
+    r2_score_test: 0.6324868878337937
+    r2_score_train: 0.573379784239268
+    r2_score_orginal: 0.5961686640010643
 
 
 
     
-![png](clustering_algo_files/clustering_algo_22_1.png)
+![png](regression_algorithms_files/regression_algorithms_10_1.png)
     
 
 
 
 ```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot( data_Spectral[ best_cols ], hue="cluster",palette='Accent') 
-```
+##model: ada_boost
+from sklearn.ensemble import AdaBoostRegressor
+base_estimator = DecisionTreeRegressor(max_depth=5)
+model_ada_boost = AdaBoostRegressor(base_estimator=base_estimator, n_estimators=50, learning_rate=0.1)
+model_ada_boost.fit(X_train, y_train)
+########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = model_ada_boost.predict(X_new)
 
+y_pred_test = model_ada_boost.predict(X_test)
+y_pred_train = model_ada_boost.predict(X_train)
+y_pred_orginal = model_ada_boost.predict(X)
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
 
-
-
-    <seaborn.axisgrid.PairGrid at 0x1791c7280>
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_23_1.png)
-    
-
-
-
-```python
-## method: dbscan
-##determining eps parameter
-from sklearn.neighbors import NearestNeighbors
-nbrs = NearestNeighbors(n_neighbors = 5).fit(Data)
-# Find the k-neighbors of a point to get eps.
-neigh_dist, neigh_ind = nbrs.kneighbors(Data)
-# sort the neighbor distances (lengths to points) in ascending order
-# axis = 0 represents sort along first axis i.e. sort along row
-sort_neigh_dist = np.sort(neigh_dist, axis = 0)
-k_dist = sort_neigh_dist[:, 4]
-plt.plot(k_dist)
-plt.ylabel("k-NN distance")
-plt.xlabel("Sorted observations (4th NN)")
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with ada-boost')
+plt.legend()
 plt.show()
 ```
 
-
-    
-![png](clustering_algo_files/clustering_algo_24_0.png)
-    
+    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+      return f(*args, **kwargs)
 
 
-
-```python
-## method: dbscan
-from sklearn.cluster import DBSCAN
-# Initialize the DBSCAN model
-dbscan = DBSCAN(eps=2100, min_samples=100)
-# Fit the DBSCAN model to the data
-dbscan.fit(Data)
-# Extract the cluster labels
-labels = dbscan.labels_
-# Print the number of clusters
-n_clusters = len(np.unique(labels))
-print(f"Number of clusters: {n_clusters}")
-
-
-
-```
-
-    Number of clusters: 2
-
-
-
-```python
-data_dbscan = Data.copy()
-data_dbscan['cluster'] = dbscan.labels_
-sns.relplot(data = data_dbscan ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-#plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-```
-
-
-
-
-    Text(14.577494361348528, 0.5, 'Income')
-
+    r2_score_test: 0.20123078391652682
+    r2_score_train: 0.85935356564122
+    r2_score_orginal: 0.6105040407477482
 
 
 
     
-![png](clustering_algo_files/clustering_algo_26_1.png)
+![png](regression_algorithms_files/regression_algorithms_11_2.png)
     
 
 
 
 ```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot(data_dbscan[best_cols], hue="cluster",palette='Accent') 
+# model : GradientBoos
+from sklearn.ensemble import GradientBoostingRegressor
+model_g_boost = GradientBoostingRegressor()
+model_g_boost.fit(X_train, y_train)
+########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = model_g_boost.predict(X_new)
+
+y_pred_test = model_g_boost.predict(X_test)
+y_pred_train = model_g_boost.predict(X_train)
+y_pred_orginal = model_g_boost.predict(X)
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
+
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with g-boost')
+plt.legend()
+plt.show()
 ```
 
+    r2_score_test: 0.28023899182141265
+    r2_score_train: 0.8936658503459132
+    r2_score_orginal: 0.6616919948568706
 
 
-
-    <seaborn.axisgrid.PairGrid at 0x1444963a0>
-
+    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+      return f(*args, **kwargs)
 
 
 
     
-![png](clustering_algo_files/clustering_algo_27_1.png)
+![png](regression_algorithms_files/regression_algorithms_12_2.png)
     
 
 
 
 ```python
-## method: AffinityPropagation
-from sklearn.cluster import AffinityPropagation
-from sklearn.datasets import make_blobs
+##model ExtraTrees
+from sklearn.ensemble import ExtraTreesRegressor
+model_extratree = ExtraTreesRegressor(n_estimators=10, random_state=42)
+model_extratree.fit(X_train, y_train)
+########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = model_extratree.predict(X_new)
 
-# Generate sample data
+y_pred_test = model_extratree.predict(X_test)
+y_pred_train = model_extratree.predict(X_train)
+y_pred_orginal = model_extratree.predict(X)
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
 
-# Initialize the AffinityPropagation model
-affinity_propagation = AffinityPropagation(damping=0.84, preference=None)
-
-# Fit the AffinityPropagation model to the data
-affinity_propagation = affinity_propagation.fit(Data)
-
-# Get the cluster labels and cluster centers
-labels = affinity_propagation.labels_
-cluster_centers = affinity_propagation.cluster_centers_
-# Print the number of identified clusters
-n_clusters = len(cluster_centers)
-print(f"Number of clusters: {n_clusters}")
-
-
-
-
-
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with extratree')
+plt.legend()
+plt.show()
 ```
 
-    Number of clusters: 22
+    r2_score_test: 0.2896668551674425
+    r2_score_train: 0.9995395981792005
+    r2_score_orginal: 0.7309711087063522
 
 
-
-```python
-data_affinity_propagation = Data.copy()
-data_affinity_propagation['cluster'] = affinity_propagation.labels_
-sns.relplot(data = data_affinity_propagation ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-#plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-```
-
-
-
-
-    Text(14.743468067426406, 0.5, 'Income')
-
+    <ipython-input-301-03b6e72d7d1d>:4: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples,), for example using ravel().
+      model_extratree.fit(X_train, y_train)
 
 
 
     
-![png](clustering_algo_files/clustering_algo_29_1.png)
+![png](regression_algorithms_files/regression_algorithms_13_2.png)
     
 
 
 
 ```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot(data_affinity_propagation[ best_cols ], hue="cluster",palette='Accent') 
+## model KernelRidge
+from sklearn.kernel_ridge import KernelRidge
+# Fit the Kernel Ridge Regression model
+model_KernelRidg = KernelRidge(alpha=0.1, kernel='rbf')
+model_KernelRidg.fit(X_train, y_train)
+########################
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+y_pred_new = model_extratree.predict(X_new)
+
+y_pred_test = model_KernelRidg.predict(X_test)
+y_pred_train = model_KernelRidg.predict(X_train)
+y_pred_orginal = model_KernelRidg.predict(X)
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
+
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Nonlinear Regression with KernelRidg')
+plt.legend()
+plt.show()
 ```
 
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x179d599a0>
-
+    r2_score_test: 0.6314784215124377
+    r2_score_train: 0.5762856045109264
+    r2_score_orginal: 0.5975906707462677
 
 
 
     
-![png](clustering_algo_files/clustering_algo_30_1.png)
+![png](regression_algorithms_files/regression_algorithms_14_1.png)
     
 
 
 
 ```python
-# method OPTICS
-from sklearn.cluster import OPTICS
-optics = OPTICS(min_samples=5, xi=0.05, min_cluster_size=0.1)
+##model: Polynomial
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+# Create polynomial features
+degree = 2  # Degree of polynomial
+model_poly = PolynomialFeatures(degree=degree)
+X_train_poly = model_poly.fit_transform(X_train)
+X_test_poly = model_poly.transform(X_test)
+# Create and fit the polynomial regression model
+model = LinearRegression()
+model.fit(X_train_poly, y_train)
 
-# Fit the OPTICS model to the data
-optics.fit(Data)
+# Predict using the trained model
+X_plot = np.linspace(0.5, 4, 692).reshape(-1, 1)
+X_plot_poly = model_poly.transform(X_plot)
+y_plot = model.predict(X_plot_poly)
 
-# Extract the cluster labels
-labels = optics.labels_
-
-# Print the number of clusters
-n_clusters = len(np.unique(labels))
-print(f"Number of clusters: {n_clusters}")
-
+# Plot the original data and the regression curve
+plt.scatter(X_train, y_train, color='green', label='Training Data')
+plt.scatter(X_test, y_test, color='red', label='Testing Data')
+plt.plot(X_plot, y_plot, color='black', label='Polynomial Regression', linewidth=3)
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.title('Polynomial Regression')
+plt.legend()
+plt.show()
+# Evaluate the model accuracy
+y_train_pred = model.predict(X_train_poly)
+y_test_pred = model.predict(X_test_poly)
+print("r2_score_train:", r2_score(y_train, y_train_pred))
+print("r2_score_test:", r2_score(y_test, y_test_pred))
 ```
 
-    Number of clusters: 4
+
+    
+![png](regression_algorithms_files/regression_algorithms_15_0.png)
+    
+
+
+    r2_score_train: 0.5454831287885435
+    r2_score_test: 0.6361940663472756
 
 
 
 ```python
-data_optics = Data.copy()
-data_optics['cluster'] = optics.labels_
-sns.relplot(data = data_optics ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-#plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
+##model BayesianRidge
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import BayesianRidge
+degree = 2  # Degree of polynomial
+model_poly = PolynomialFeatures(degree=degree)
+X_train_poly = model_poly.fit_transform(X_train)
+X_test_poly = model_poly.transform(X_test)
+# Create and fit the Bayesian model
+model_bayes = BayesianRidge()
+model_bayes.fit(X_train_poly, y_train)
+
+# Predict using the trained model
+X_plot = np.linspace(0.5, 4, 692).reshape(-1, 1)
+X_plot_poly = model_poly.transform(X_plot)
+y_plot = model_bayes.predict(X_plot_poly)
+
+# Plot the original data and the regression curve
+plt.scatter(X_train, y_train, color='green', label='Training Data')
+plt.scatter(X_test, y_test, color='red', label='Testing Data')
+plt.plot(X_plot, y_plot, color='black', label='Bayesian Regression', linewidth=3)
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.title('Bayesian Regression')
+plt.legend()
+plt.show()
+# Evaluate the model accuracy
+y_train_pred = model_bayes.predict(X_train_poly)
+y_test_pred = model_bayes.predict(X_test_poly)
+print("r2_score_train:", r2_score(y_train, y_train_pred))
+print("r2_score_test:", r2_score(y_test, y_test_pred))
 ```
 
-
-
-
-    Text(14.577494361348528, 0.5, 'Income')
-
+    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+      return f(*args, **kwargs)
 
 
 
     
-![png](clustering_algo_files/clustering_algo_32_1.png)
+![png](regression_algorithms_files/regression_algorithms_16_1.png)
     
+
+
+    r2_score_train: 0.5452187009957163
+    r2_score_test: 0.6373403431551519
 
 
 
 ```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot(data_optics [ best_cols ], hue="cluster",palette='Accent') 
+
 ```
-
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x14e951dc0>
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_33_1.png)
-    
-
 
 
 ```python
-## method GaussianMixture
-from sklearn.mixture import GaussianMixture
+##model deep learning
+from tensorflow import keras
+from sklearn.preprocessing import MinMaxScaler
 
-# Initialize the GMM model
-gmm = GaussianMixture(n_components=3, random_state=0)
+# Normalize the input features
+scaler = MinMaxScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+X_scaled = scaler.transform(X)
 
-# Fit the GMM model to the data
-gmm.fit(Data)
 
-# Predict the cluster labels for the data points
-labels = gmm.predict(Data)
+# Build the neural network model
+model = keras.Sequential([
+    keras.layers.Dense(64, activation='relu', input_shape=(1,)),
+    keras.layers.Dense(32, activation='relu'),
+    keras.layers.Dense(1)
+])
 
-# Print the number of clusters
-n_clusters = len(np.unique(labels))
-print(f"Number of clusters: {n_clusters}")
+# Compile the model
+model.compile(optimizer='adam', loss='mean_squared_error')
+# Train the model
+model.fit(X_train_scaled, y_train, epochs=100, batch_size=8, verbose=0)
+#____________
+X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
+X_new_scaled = scaler.transform(X_new)
+y_pred_new = model.predict(X_new_scaled)
+
+y_pred_test = model.predict(X_test_scaled)
+y_pred_train = model.predict(X_train_scaled)
+y_pred_orginal = model.predict(X_scaled)
+
+########
+# Print the predicted output, R-squared
+print('r2_score_test:',r2_score(y_test, y_pred_test))
+print('r2_score_train:',r2_score(y_train, y_pred_train))
+print('r2_score_orginal:',r2_score(y, y_pred_orginal))
+
+####plots
+plt.scatter(X_train, y_train, color='green', label='Training data')
+plt.scatter(X_test, y_test, color='red', label='Testing data')
+plt.plot(X_new, y_pred_new, color='black', linewidth=3, label='Prediction')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.title('Neural Network Regression')
+plt.legend()
+plt.show()
 ```
 
-    Number of clusters: 3
-
-
-
-```python
-data_gmm = Data.copy()
-data_gmm['cluster'] = gmm.labels_
-sns.relplot(data = data_gmm ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-#plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-```
-
-
-
-
-    Text(14.315430614909786, 0.5, 'Income')
-
+    22/22 [==============================] - 0s 1ms/step
+    7/7 [==============================] - 0s 1ms/step
+    16/16 [==============================] - 0s 1ms/step
+    22/22 [==============================] - 0s 963us/step
+    r2_score_test: 0.6423428557689354
+    r2_score_train: 0.5556926904554241
+    r2_score_orginal: 0.5889197319546502
 
 
 
     
-![png](clustering_algo_files/clustering_algo_35_1.png)
-    
-
-
-
-```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot(data_gmm [ best_cols ], hue="cluster",palette='Accent') 
-```
-
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x157f277c0>
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_36_1.png)
-    
-
-
-
-```python
-## method MeanShift
-from sklearn.cluster import MeanShift, estimate_bandwidth
-# Estimate the bandwidth (bandwidth determines the size of the kernel)
-bandwidth = estimate_bandwidth(Data, quantile=0.2, n_samples=100)
-
-# Initialize the Mean Shift model
-ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
-
-# Fit the Mean Shift model to the data
-ms.fit(Data)
-# Extract the cluster labels and cluster centers
-labels = ms.labels_
-cluster_centers = ms.cluster_centers_
-
-# Print the number of clusters
-n_clusters = len(np.unique(labels))
-print(f"Number of clusters: {n_clusters}")
-```
-
-    Number of clusters: 4
-
-
-
-```python
-data_ms = Data.copy()
-data_ms['cluster'] = ms.labels_
-sns.relplot(data = data_ms ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-#plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-```
-
-
-
-
-    Text(14.315430614909786, 0.5, 'Income')
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_38_1.png)
+![png](regression_algorithms_files/regression_algorithms_18_1.png)
     
 
 
 
 ```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot(data_ms [ best_cols ], hue="cluster",palette='Accent') 
+
 ```
-
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x151dd2a90>
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_39_1.png)
-    
-
 
 
 ```python
-## method Birch
-from sklearn.cluster import Birch
-# Initialize the BIRCH model
-birch = Birch(n_clusters=4)
 
-# Fit the BIRCH model to the data
-birch.fit(Data)
-
-# Extract the cluster labels
-labels = birch.labels_
-
-# Print the number of clusters
-n_clusters = len(np.unique(labels))
-print(f"Number of clusters: {n_clusters}")
 ```
-
-    Number of clusters: 4
-
-
-
-```python
-data_birch = Data.copy()
-data_birch['cluster'] = birch.labels_
-sns.relplot(data = data_birch ,x='Age' , y  ='Income', hue='cluster', palette='Accent' ,kind='scatter', height=8.27, aspect = 11.7/8.27)
-#plt.scatter(centroids[:, 0], centroids[:,1], c='red', s=50)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-plt.xlabel("Age",fontsize=15)
-plt.ylabel("Income",fontsize=15)
-```
-
-
-
-
-    Text(14.315430614909786, 0.5, 'Income')
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_41_1.png)
-    
-
-
-
-```python
-best_cols = ["Education", "Income", "Recency","Wines", "Fruits", "Meat","Gold","cluster"]
-sns.pairplot(data_birch [ best_cols ], hue="cluster",palette='Accent') 
-```
-
-
-
-
-    <seaborn.axisgrid.PairGrid at 0x16a8a5cd0>
-
-
-
-
-    
-![png](clustering_algo_files/clustering_algo_42_1.png)
-    
-
 
 
 ```python
