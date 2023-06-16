@@ -582,8 +582,7 @@ print("r2_score_train:", r2_score(y_train, y_train_pred))
 print("r2_score_test:", r2_score(y_test, y_test_pred))
 ```
 
-    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
-      return f(*args, **kwargs)
+ 
 
 
 
