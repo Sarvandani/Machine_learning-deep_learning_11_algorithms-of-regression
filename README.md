@@ -273,8 +273,7 @@ plt.show()
 
 ```
 
-    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
-      return f(*args, **kwargs)
+
 
 
     r2_score_test: 0.5936860250103088
@@ -362,8 +361,6 @@ plt.legend()
 plt.show()
 ```
 
-    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
-      return f(*args, **kwargs)
 
 
     r2_score_test: 0.20123078391652682
@@ -412,9 +409,6 @@ plt.show()
     r2_score_orginal: 0.6616919948568706
 
 
-    /Users/mohamadians/opt/anaconda3/lib/python3.8/site-packages/sklearn/utils/validation.py:63: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
-      return f(*args, **kwargs)
-
 
 
     
@@ -457,7 +451,7 @@ plt.show()
     r2_score_orginal: 0.7309711087063522
 
 
-    <ipython-input-301-03b6e72d7d1d>:4: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples,), for example using ravel().
+
       model_extratree.fit(X_train, y_train)
 
 
