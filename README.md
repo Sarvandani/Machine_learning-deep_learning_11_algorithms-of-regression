@@ -150,7 +150,7 @@ plt.show()
     
 
 
-
+1. Decision Trees: Decision trees can be used for non-linear regression by partitioning the input space into regions based on different features and predicting the target variable based on the average or majority value of the samples within each region.
 
 ```python
 ########model: decision tree
@@ -194,7 +194,7 @@ plt.show()
 ![png](regression_algorithms_files/regression_algorithms_7_1.png)
     
 
-
+2. Random Forest: Random Forest is an ensemble learning method that combines multiple decision trees to make predictions. It can capture non-linear relationships by aggregating the predictions of individual trees. 
 
 ```python
 ########model: Random forest
