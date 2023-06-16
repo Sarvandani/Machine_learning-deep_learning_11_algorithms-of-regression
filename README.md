@@ -2,7 +2,7 @@
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
 # 11 algorithms of non-linear regression in machine learning with explanation
 
-##I have created a python code called `regression_algorithms.ipynb` for understanding how we are able to implement different approaches of non-linear regression algorithms in machine learning. Non-linear regression algorithms are machine learning techniques used to model and predict non-linear relationships between input variables and target variables. These algorithms aim to capture complex patterns and interactions that cannot be effectively represented by a linear model. Here are some popular non-linear regression algorithms:
+# I have created a python code called `regression_algorithms.ipynb` for understanding how we are able to implement different approaches of non-linear regression algorithms in machine learning. Non-linear regression algorithms are machine learning techniques used to model and predict non-linear relationships between input variables and target variables. These algorithms aim to capture complex patterns and interactions that cannot be effectively represented by a linear model. Here are some popular non-linear regression algorithms:
 
 
 
@@ -154,7 +154,6 @@ plt.show()
 
 ```python
 ########model: decision tree
-##1. Decision Trees: Decision trees can be used for non-linear regression by partitioning the input space into regions based on different features and predicting the target ##variable based on the average or majority value of the samples within each region. The result of our code for this algorithm is follows:
 from sklearn.tree import DecisionTreeRegressor
 ## the shape of fitting changes with this max_depth
 model_tree = DecisionTreeRegressor(max_depth=3)
