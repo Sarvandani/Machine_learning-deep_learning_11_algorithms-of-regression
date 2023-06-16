@@ -28,7 +28,7 @@ from sklearn.model_selection import train_test_split
 
 
 ```
-
+---------
 
 ```python
 ## reading data - information
@@ -70,7 +70,7 @@ sns.pairplot(data)
 ![png](regression_algorithms_files/regression_algorithms_1_2.png)
     
 
-
+-----------
 
 ```python
 features =  data[['X']]
@@ -110,7 +110,7 @@ X.shape
 
 ```
 
-
+------------------
 ```python
 ## linear regression
 from sklearn.linear_model import LinearRegression
