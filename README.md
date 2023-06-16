@@ -149,11 +149,12 @@ plt.show()
 ![png](regression_algorithms_files/regression_algorithms_6_1.png)
     
 
-1. Decision Trees: Decision trees can be used for non-linear regression by partitioning the input space into regions based on different features and predicting the target variable based on the average or majority value of the samples within each region. The result of our code for this algorithm is follows:
+
 
 
 ```python
 ########model: decision tree
+##1. Decision Trees: Decision trees can be used for non-linear regression by partitioning the input space into regions based on different features and predicting the target ##variable based on the average or majority value of the samples within each region. The result of our code for this algorithm is follows:
 from sklearn.tree import DecisionTreeRegressor
 ## the shape of fitting changes with this max_depth
 model_tree = DecisionTreeRegressor(max_depth=3)
