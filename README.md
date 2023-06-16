@@ -10,7 +10,7 @@ I have created a python code called `regression_algorithms.ipynb` for understand
 
 ```python
 
-`import glob
+`import glob`
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
