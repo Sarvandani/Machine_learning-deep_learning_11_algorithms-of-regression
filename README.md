@@ -10,7 +10,7 @@ I have created a python code called `regression_algorithms.ipynb` for understand
 
 ```python
 
-import glob
+`import glob
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,7 +24,7 @@ from sklearn import metrics
 from sklearn.metrics import r2_score
 from sklearn.metrics import explained_variance_score
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split`
 
 
 ```
