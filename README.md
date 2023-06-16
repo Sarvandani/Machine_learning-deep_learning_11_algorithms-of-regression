@@ -239,7 +239,9 @@ plt.show()
 
     
 ![png](regression_algorithms_files/regression_algorithms_8_2.png)
+
 --------------------   
+
 3. Support Vector Regression (SVR): SVR is a variation of Support Vector Machines (SVM) used for regression tasks. It uses kernel functions to transform the data into a higher-dimensional space, where a linear regression model is applied to capture non-linear relationships. 
 
 ```python
