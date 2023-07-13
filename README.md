@@ -298,7 +298,7 @@ model_knn = KNeighborsRegressor(n_neighbors=20)
 model_knn.fit(X_train, y_train)
 ########################
 X_new = np.linspace(0.5, 4, 692).reshape(-1, 1)
-y_pred_new = knn.predict(X_new)
+y_pred_new = model_knn.predict(X_new)
 
 y_pred_test = model_knn.predict(X_test)
 y_pred_train = model_knn.predict(X_train)
